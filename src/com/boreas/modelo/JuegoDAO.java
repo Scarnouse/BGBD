@@ -1,8 +1,6 @@
-package com.boreas.controlador;
+package com.boreas.modelo;
 
 import java.util.List;
-
-import com.boreas.modelo.Juego;
 
 /**
  * 

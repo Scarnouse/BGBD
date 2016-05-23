@@ -1,4 +1,4 @@
-package com.boreas.controlador;
+package com.boreas.modelo;
 
 import java.io.File;
 import java.io.FileReader;
@@ -7,8 +7,6 @@ import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.boreas.modelo.Coleccion;
-import com.boreas.modelo.Juego;
 import com.google.gson.stream.JsonReader;
 /**
  * Clase de lectura del fichero

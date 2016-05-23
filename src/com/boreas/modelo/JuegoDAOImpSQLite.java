@@ -1,4 +1,4 @@
-package com.boreas.controlador;
+package com.boreas.modelo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,9 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-
-import com.boreas.modelo.Coleccion;
-import com.boreas.modelo.Juego;
 
 /**
  * 
@@ -90,7 +87,7 @@ public class JuegoDAOImpSQLite implements JuegoDAO{
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		System.out.println(valor);
+		//System.out.println(valor);
 		return valor;
 	}
 	

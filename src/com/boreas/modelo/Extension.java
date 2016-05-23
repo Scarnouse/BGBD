@@ -1,4 +1,4 @@
-package com.boreas.controlador;
+package com.boreas.modelo;
 
 import java.io.File;
 

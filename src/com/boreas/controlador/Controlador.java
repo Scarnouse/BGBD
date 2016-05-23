@@ -19,8 +19,16 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import com.boreas.modelo.AcercaDe;
 import com.boreas.modelo.Coleccion;
+import com.boreas.modelo.ConectarBD;
+import com.boreas.modelo.CreadorPDF;
+import com.boreas.modelo.CrearTablasBD;
+import com.boreas.modelo.Extension;
 import com.boreas.modelo.Juego;
+import com.boreas.modelo.JuegoDAOImpSQLite;
+import com.boreas.modelo.LecturaFichero;
+import com.boreas.modelo.TablaModelo;
 import com.boreas.vista.VistaPrincipal;
 
 /**
@@ -39,6 +47,7 @@ public class Controlador {
 	private boolean modificar = false;
 	private Connection c = ConectarBD.getConexion();
 	JuegoDAOImpSQLite jSQLite = new JuegoDAOImpSQLite();
+	private int id = -1;
 	
 	/**
 	 * 
@@ -55,6 +64,7 @@ public class Controlador {
 		if (new File("database.db").exists() && jSQLite.obtenerFilas()>0){
 			vista.getMntmAbrir().setEnabled(false);
 			vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+			CrearTablasBD.triggerBorrado(c);
 		}
 		
 		//Evento carga de datos a la tabla
@@ -70,7 +80,7 @@ public class Controlador {
 				vista.getTabla().setModel(new TablaModelo(Coleccion.getLista()));
 				//CrearTablasBD.crearTablaJuego(c);
 				//CrearTablasBD.insertarListaJuegos(c,Coleccion.getLista());
-				CrearTablasBD.triggerCarga(c, Coleccion.getLista());
+				CrearTablasBD.cargarTablasLotes(c, Coleccion.getLista());
 				vista.getMntmAbrir().setEnabled(false);
 			}			
 			if (seleccion == JFileChooser.CANCEL_OPTION){
@@ -85,7 +95,9 @@ public class Controlador {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				indice = vista.getTabla().getSelectedRow();
+				//System.out.println(indice);
 				rellenarFormulario(indice);
+				id = jSQLite.obtenerID(Coleccion.getLista().get(indice));
 			}
 		});
 		
@@ -221,8 +233,6 @@ public class Controlador {
 			}
 		});
 		
-
-		
 	}
 	
 	/**
@@ -319,6 +329,22 @@ public class Controlador {
 	private int confirmar(String texto){
 		int seleccion = JOptionPane.showOptionDialog(vista.getFrame(), texto , "Confirmación", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[] {"Si", "No"}, "No");
 		return seleccion;
+	}
+	
+	//método no utilizado
+	//su futura funcionalidad era que notificara que se habían hecho cambios en el formulario
+	//si se pasaba a otra fila
+	private void modificarTrasSeleccion(){
+		if (id != -1 && id != jSQLite.obtenerID(Coleccion.getLista().get(vista.getTabla().getSelectedRow()))){
+			if(!(vista.getTextNombre().getText().equals(Coleccion.getLista().get(indice).getNombre()) && vista.getTextAnyo().getText().equals(Coleccion.getLista().get(indice).getAnyoPublicacion()+"") && vista.getTextMax().getText().equals(Coleccion.getLista().get(indice).getMaximoJugadores()+"") && vista.getTextMin().getText().equals(Coleccion.getLista().get(indice).getMinimoJugadores()+"") && vista.getTextRanking().getText().equals(Coleccion.getLista().get(indice).getRanking()+"") && vista.getTextRating().getText().equals(Coleccion.getLista().get(indice).getRating()+"") && vista.getTextTiempo().getText().equals(Coleccion.getLista().get(indice).getTiempoJuego()+""))){
+				String texto = "Ha realizado cambios. ¿Desea guardar?";
+				if (confirmar(texto)==0){
+					jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())),id);
+					vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+				}
+				
+			}
+		}
 	}
 	
 }
