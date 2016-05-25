@@ -2,6 +2,7 @@ package com.boreas.controlador;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -17,9 +18,9 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.boreas.modelo.AcercaDe;
 import com.boreas.modelo.Coleccion;
 import com.boreas.modelo.ConectarBD;
 import com.boreas.modelo.CreadorPDF;
@@ -28,11 +29,13 @@ import com.boreas.modelo.Extension;
 import com.boreas.modelo.Juego;
 import com.boreas.modelo.JuegoDAOImpSQLite;
 import com.boreas.modelo.LecturaFichero;
-import com.boreas.modelo.TablaModelo;
+import com.boreas.vista.AcercaDe;
+import com.boreas.vista.TablaModelo;
 import com.boreas.vista.VistaPrincipal;
+import com.itextpdf.text.log.SysoCounter;
 
 /**
- * 
+ * Clase Controlador
  * @author Manuel Quesada Segura
  * @vesion 0.0
  *
@@ -43,22 +46,25 @@ public class Controlador {
 	private VistaPrincipal vista;
 	private File fichero;
 	private LecturaFichero lFichero = new LecturaFichero();
-	private int indice = 0;
-	private boolean modificar = false;
+	private int indice = 0; //indice que ocupa el juego en la lista
+	private boolean modificar = false; //indica si se trata de un juego cargado en el formulario
 	private Connection c = ConectarBD.getConexion();
-	JuegoDAOImpSQLite jSQLite = new JuegoDAOImpSQLite();
-	private int id = -1;
+	private JuegoDAOImpSQLite jSQLite = new JuegoDAOImpSQLite();
+	private int id = -1; //identificador obtenido de la Base Datos. Es la primary key del objeto juego
 	
 	/**
-	 * 
-	 * @param vista de la aplicación
+	 * Contructor de la clase Controlador
+	 * @param vista Vista de la aplicación
 	 */
 	
 	public Controlador(VistaPrincipal vista){
 		this.vista = vista;
 		inicializar();
 	}
-
+	
+	/**
+	 * Clase que inicializa los eventos relacionados con la vista.
+	 */
 	public void inicializar(){
 		
 		if (new File("database.db").exists() && jSQLite.obtenerFilas()>0){
@@ -78,8 +84,6 @@ public class Controlador {
 				fichero = fC.getSelectedFile();
 				lFichero.leerFichero(fichero);
 				vista.getTabla().setModel(new TablaModelo(Coleccion.getLista()));
-				//CrearTablasBD.crearTablaJuego(c);
-				//CrearTablasBD.insertarListaJuegos(c,Coleccion.getLista());
 				CrearTablasBD.cargarTablasLotes(c, Coleccion.getLista());
 				vista.getMntmAbrir().setEnabled(false);
 			}			
@@ -91,14 +95,15 @@ public class Controlador {
 		
 		//Evento de carga de datos al formulario haciendo click en una fila
 		
-		vista.getTabla().addMouseListener(new MouseAdapter() {			
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				indice = vista.getTabla().getSelectedRow();
-				//System.out.println(indice);
-				rellenarFormulario(indice);
-				id = jSQLite.obtenerID(Coleccion.getLista().get(indice));
-			}
+		vista.getTabla().getSelectionModel().addListSelectionListener(l->{			
+				if (vista.getTabla().getSelectedRow() != -1){
+					//System.out.println(vista.getTabla().getSelectedRow());
+					indice = vista.getTabla().getSelectedRow();
+					modificarTrasSeleccion();
+					rellenarFormulario(indice);
+					id = jSQLite.obtenerID(Coleccion.getLista().get(indice));
+					vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+				}
 		});
 		
 		//Evento para retroceder en la tabla
@@ -136,13 +141,7 @@ public class Controlador {
 		
 		//Evento que borra el formulario en espera de que el usuario lo rellene
 		vista.getBtnNuevo().addActionListener(l->{
-			vista.getTextNombre().setText("");
-			vista.getTextAnyo().setText("");
-			vista.getTextMin().setText("");
-			vista.getTextMax().setText("");
-			vista.getTextRanking().setText("");
-			vista.getTextRating().setText("");
-			vista.getTextTiempo().setText("");
+			limpiarFormulario();
 			modificar = false;
 		});
 		
@@ -175,10 +174,9 @@ public class Controlador {
 				String texto = "¿Desea borrar "+ Coleccion.getLista().get(indice).getNombre() + "?";
 				if(lFichero!=null){
 					if (confirmar(texto)==0){
-						//Coleccion.getLista().remove(Coleccion.getLista().get(indice));
-						//vista.getTabla().setModel(new TablaModelo(Coleccion.getLista()));
 						jSQLite.borrarJuego(Coleccion.getLista().get(indice).getNombre());
 						vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+						limpiarFormulario();
 					}
 				} else if (lFichero == null) {
 					vista.getLblBarraTitulo().setText("No tiene cargado ningún archivo");
@@ -223,7 +221,7 @@ public class Controlador {
 			}
 		});
 		
-		//Acceso a Créditos
+		//Evento de acceso a Créditos
 		
 		vista.getMntmCreditos().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -238,8 +236,8 @@ public class Controlador {
 	/**
 	 * Método que permite la carga del formulario y rellenado de la barra de título
 	 * He considerado oportuno hacerlo dentro del controlador ya que ninguna otra clase
-	 * va a poder usarla
-	 * @param indice del elemento que debe de ser mostrado en pantalla
+	 * va a poder usarla de ahí a que su encapsulamiento sea privado
+	 * @param indice número que indica qué elemento va a ser cargado en el formulario
 	 */
 	private void rellenarFormulario(int indice){
 		modificar = true;
@@ -272,7 +270,7 @@ public class Controlador {
 
 	/**
 	 * Método que valida si los campos introducidos por el usuario son correctos.
-	 * Hago notar que hay campos que se introducen desde el archivo que son incorrectos
+	 * Hago notar que hay campos que se introducen desde el archivo json que son incorrectos
 	 * @return true si el objeto Juego cumple todos las restrigciones expuestas
 	 */
 	private boolean esJuegoValido(){
@@ -320,7 +318,7 @@ public class Controlador {
 		return igual;
 	}
 	/**
-	 * Se utiliza en varios lugares del código un elemento JOptionPane que permite la selección entre sí y no.
+	 * Se utiliza en varios lugares del código un elemento JOptionPane que permite la selección entre "sí y no".
 	 * Me ha parecido oportuno crear un método que gestione dicha selección en la cual sólo se le introduce un texto
 	 * que aparecerá en el cuerpo de la ventana.
 	 * @param texto cadena de texto que aparecerá en el cuerpo de la ventana
@@ -331,20 +329,39 @@ public class Controlador {
 		return seleccion;
 	}
 	
-	//método no utilizado
-	//su futura funcionalidad era que notificara que se habían hecho cambios en el formulario
-	//si se pasaba a otra fila
+
+	/**
+	 * Método que notificará que hay cambios realizados en el formulario si el usuario pasa
+	 * a otra fila
+	 */
 	private void modificarTrasSeleccion(){
 		if (id != -1 && id != jSQLite.obtenerID(Coleccion.getLista().get(vista.getTabla().getSelectedRow()))){
-			if(!(vista.getTextNombre().getText().equals(Coleccion.getLista().get(indice).getNombre()) && vista.getTextAnyo().getText().equals(Coleccion.getLista().get(indice).getAnyoPublicacion()+"") && vista.getTextMax().getText().equals(Coleccion.getLista().get(indice).getMaximoJugadores()+"") && vista.getTextMin().getText().equals(Coleccion.getLista().get(indice).getMinimoJugadores()+"") && vista.getTextRanking().getText().equals(Coleccion.getLista().get(indice).getRanking()+"") && vista.getTextRating().getText().equals(Coleccion.getLista().get(indice).getRating()+"") && vista.getTextTiempo().getText().equals(Coleccion.getLista().get(indice).getTiempoJuego()+""))){
-				String texto = "Ha realizado cambios. ¿Desea guardar?";
-				if (confirmar(texto)==0){
-					jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())),id);
-					vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+			if (jSQLite.obtenerJuego(id) != null && (!(vista.getTextNombre().getText().isEmpty() && vista.getTextAnyo().getText().isEmpty() && vista.getTextMax().getText().isEmpty() && vista.getTextMin().getText().isEmpty() && vista.getTextRanking().getText().isEmpty() && vista.getTextRating().getText().isEmpty() && vista.getTextTiempo().getText().isEmpty()))){
+				if(!(vista.getTextNombre().getText().equals(jSQLite.obtenerJuego(id).getNombre()) && vista.getTextAnyo().getText().equals(jSQLite.obtenerJuego(id).getAnyoPublicacion()+"") && vista.getTextMax().getText().equals(jSQLite.obtenerJuego(id).getMaximoJugadores()+"") && vista.getTextMin().getText().equals(jSQLite.obtenerJuego(id).getMinimoJugadores()+"") && vista.getTextRanking().getText().equals(jSQLite.obtenerJuego(id).getRanking()+"") && vista.getTextRating().getText().equals(jSQLite.obtenerJuego(id).getRating()+"") && vista.getTextTiempo().getText().equals(jSQLite.obtenerJuego(id).getTiempoJuego()+""))){
+					String texto = "Ha realizado cambios. ¿Desea guardar?";
+					if (confirmar(texto)==0){
+						jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())),id);
+						vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+					}
+					
 				}
-				
 			}
 		}
+	}
+	
+	/**
+	 * Método que limpia el formulario
+	 */
+	
+	private void limpiarFormulario(){
+		vista.getTextNombre().setText("");
+		vista.getTextAnyo().setText("");
+		vista.getTextMin().setText("");
+		vista.getTextMax().setText("");
+		vista.getTextRanking().setText("");
+		vista.getTextRating().setText("");
+		vista.getTextTiempo().setText("");
+		modificar = false;
 	}
 	
 }

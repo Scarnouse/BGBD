@@ -2,8 +2,14 @@ import java.awt.EventQueue;
 
 import com.boreas.controlador.Controlador;
 import com.boreas.vista.VistaPrincipal;
-
-public class Test {
+/**
+ * 
+ * @author Manuel Quesada Segura
+ * @version 0.0
+ * Esta es la clase main que inicia la aplicación
+ *
+ */
+public class Main {
 	
 	public static void main(String[] args) {
 

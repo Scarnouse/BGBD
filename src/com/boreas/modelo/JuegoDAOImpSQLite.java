@@ -153,6 +153,31 @@ public class JuegoDAOImpSQLite implements JuegoDAO{
 		}
 		return id;
 	}
+
+	@Override
+	public Juego obtenerJuego(int id) {
+		String sql = "SELECT * FROM JUEGO WHERE ID=?;";
+		Juego j = null;
+		try {
+			sentenciaPreparada = conexion.prepareStatement(sql);
+			sentenciaPreparada.setInt(1, id);
+			ResultSet resultado = sentenciaPreparada.executeQuery();
+			while(resultado.next()){
+				j = new Juego(resultado.getString("nombre"),resultado.getString("imagen"),resultado.getInt("minimo"),resultado.getInt("maximo"),resultado.getInt("tiempo"),resultado.getInt("ranking"),resultado.getDouble("rating"), resultado.getInt("anyo"));
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				sentenciaPreparada.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return j;
+	}
 	
 	
 

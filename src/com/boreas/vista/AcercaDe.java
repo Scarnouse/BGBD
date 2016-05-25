@@ -1,4 +1,4 @@
-package com.boreas.modelo;
+package com.boreas.vista;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -14,7 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * 
+ * Clase que carga la ventana modal de los créditos
  * @author Manuel Quesada Segura
  * @version 0.0
  *
@@ -23,7 +23,9 @@ public class AcercaDe extends JDialog implements ActionListener{
 	
 	private JButton salir;
 	
-	//constructor que inicializa la ventana modal con la información del los créditos
+	/**
+	 * Constructor que inicializa la ventana modal con la información de los créditos
+	 */
 	public AcercaDe() {
 		super();
 		iniciar();
@@ -33,7 +35,10 @@ public class AcercaDe extends JDialog implements ActionListener{
 		this.setModal(true);
 	}
 	
-	//frame principal del mismo
+
+	/**
+	 * Método que carga los elementos en la ventana modal
+	 */
 	private void iniciar(){
 		
 		JPanel panelPrincipal = new JPanel(new BorderLayout());

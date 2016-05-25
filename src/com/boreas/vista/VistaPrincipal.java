@@ -1,6 +1,6 @@
 package com.boreas.vista;
 
-//import java.awt.EventQueue;
+
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -28,7 +28,7 @@ import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 /**
- * 
+ * Clase que contiene la vista principal
  * @author Manuel Quesada Segura
  * @version 0.0
  *
@@ -115,10 +115,6 @@ public class VistaPrincipal {
 		menu.add(mnInforme);
 		
 		mntmGenerarPdf = new JMenuItem("Generar PDF");
-		mntmGenerarPdf.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
 		mnInforme.add(mntmGenerarPdf);
 		
 		mnAyuda = new JMenu("Ayuda");

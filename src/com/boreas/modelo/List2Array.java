@@ -15,9 +15,9 @@ public class List2Array {
 	 * Mi decisión es que la tabla no mostrase todos los datos al usuario para hacer funcional
 	 * el fomulario.
 	 * @param lista
-	 * @return
+	 * @return array que contiene los campos nombre, ranking y rating de cada juego
 	 */
-	protected static String[][] getListaReducida(List<Juego> lista){
+	public static String[][] getListaReducida(List<Juego> lista){
 		String[][] array = new String[lista.size()][lista.size()*3];
 		List<String> cadenas = new ArrayList<String>();
 		for (int i=0; i<lista.size(); i++){

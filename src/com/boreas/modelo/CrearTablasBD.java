@@ -12,6 +12,7 @@ import java.util.List;
  *
  */
 public class CrearTablasBD {
+	
 	private static Statement sentencia;
 	/**
 	 * Método por lotes que carga e inserta los juegos
@@ -51,7 +52,7 @@ public class CrearTablasBD {
 	}
 	/**
 	 * Trigger que inserta tras borrar un elemento de la tabla en la tabla
-	 * Historial.
+	 * Historial. Esta se creará si no existe.
 	 * @param c Conexión
 	 */
 	public static void triggerBorrado(Connection c){
@@ -81,7 +82,7 @@ public class CrearTablasBD {
 		
 	}
 	/**
-	 * Método para crear una vista
+	 * Método para crear una vista compuesta por los campos nombre, ranking, rating
 	 * @param c Conexión
 	 */
 	public static void crearVista(Connection c){
