@@ -3,8 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="C:/Users/scarn/git/BoardGame/recursos/gson-1.7.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/scarn/git/BoardGame/recursos/itextpdf-5.5.9.jar"/>
-	<classpathentry kind="lib" path="C:/Users/scarn/git/BoardGame/recursos/sqlite-jdbc-3.8.11.2.jar"/>
+	<classpathentry kind="lib" path="libs/gson-1.7.1.jar"/>
+	<classpathentry kind="lib" path="libs/itextpdf-5.5.9.jar"/>
+	<classpathentry kind="lib" path="libs/sqlite-jdbc-3.8.11.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
