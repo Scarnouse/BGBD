@@ -39,7 +39,8 @@ public class ConectarBD {
 				//carga de url
 				conexion = DriverManager.getConnection(url,sqConfig.toProperties());
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
+				System.err.println("Driver no encontrado");
+				//e.printStackTrace();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

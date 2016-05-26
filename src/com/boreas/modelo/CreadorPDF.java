@@ -51,7 +51,8 @@ public class CreadorPDF {
 			documento.add(fila);
 			documento.close();
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			System.err.format("El archivo %s no ha podido ser creado", archivo);
+			//e.printStackTrace();
 		} catch (DocumentException e) {
 			e.printStackTrace();
 		}

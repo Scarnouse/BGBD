@@ -13,6 +13,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.boreas.controlador.Main;
+
 /**
  * Clase que carga la ventana modal de los créditos
  * @author Manuel Quesada Segura
@@ -48,7 +50,7 @@ public class AcercaDe extends JDialog implements ActionListener{
 		
 		JLabel titulo = new JLabel("GameBoard",JLabel.CENTER);
 		titulo.setFont(new Font("Arial",Font.BOLD,15));
-		ImageIcon ico = new ImageIcon("resources/dado.png");
+		ImageIcon ico = new ImageIcon(Main.class.getResource("/dado.png"));
 		JLabel icono = new JLabel(ico);
 		panelIcono.add(icono);
 		

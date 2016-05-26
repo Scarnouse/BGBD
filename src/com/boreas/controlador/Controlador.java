@@ -2,10 +2,7 @@ package com.boreas.controlador;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Component;
 import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -18,7 +15,6 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.boreas.modelo.Coleccion;
@@ -28,11 +24,11 @@ import com.boreas.modelo.CrearTablasBD;
 import com.boreas.modelo.Extension;
 import com.boreas.modelo.Juego;
 import com.boreas.modelo.JuegoDAOImpSQLite;
+import com.boreas.modelo.JuegoIlegalException;
 import com.boreas.modelo.LecturaFichero;
 import com.boreas.vista.AcercaDe;
 import com.boreas.vista.TablaModelo;
 import com.boreas.vista.VistaPrincipal;
-import com.itextpdf.text.log.SysoCounter;
 
 /**
  * Clase Controlador
@@ -67,6 +63,10 @@ public class Controlador {
 	 */
 	public void inicializar(){
 		
+		//Esta condición filtra si se ha abierto la base de datos y contiene filas en su tabla juegos
+		//Si es true, impide la carga de más ficheros, carga los juegos desde la tabla de la BD y activa
+		//el trigger de borrado
+		
 		if (new File("database.db").exists() && jSQLite.obtenerFilas()>0){
 			vista.getMntmAbrir().setEnabled(false);
 			vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
@@ -76,6 +76,7 @@ public class Controlador {
 		//Evento carga de datos a la tabla
 
 		vista.getMntmAbrir().addActionListener(l->{
+			//Filtra que por defecto solo muestre los arcivos de extensión json.
 			FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos JSON", "json");
 			JFileChooser fC = new JFileChooser();
 			fC.setFileFilter(filter);
@@ -96,14 +97,13 @@ public class Controlador {
 		//Evento de carga de datos al formulario haciendo click en una fila
 		
 		vista.getTabla().getSelectionModel().addListSelectionListener(l->{			
-				if (vista.getTabla().getSelectedRow() != -1){
-					//System.out.println(vista.getTabla().getSelectedRow());
-					indice = vista.getTabla().getSelectedRow();
-					modificarTrasSeleccion();
-					rellenarFormulario(indice);
-					id = jSQLite.obtenerID(Coleccion.getLista().get(indice));
-					vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
-				}
+			if (vista.getTabla().getSelectedRow() != -1){
+				indice = vista.getTabla().getSelectedRow();
+				modificarTrasSeleccion();
+				rellenarFormulario(indice);
+				id = jSQLite.obtenerID(Coleccion.getLista().get(indice));
+				vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+			}
 		});
 		
 		//Evento para retroceder en la tabla
@@ -149,19 +149,37 @@ public class Controlador {
 		vista.getBtnGuardar().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (esJuegoValido()){
-					Juego juego = new Juego(vista.getTextNombre().getText(), "resources/dado.png", Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText()));
-					if (esJuegoIgual(juego)){
-						JOptionPane.showMessageDialog(vista.getFrame(), "Juego repetido", "Error", JOptionPane.ERROR_MESSAGE);
-					} else {
-						if(modificar){
-							int lugarBD = jSQLite.obtenerID(Coleccion.getLista().get(indice));
-							jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())),lugarBD);
-							vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+					Juego juego;
+					try {
+						juego = new Juego(vista.getTextNombre().getText(), "resources/dado.png", 
+								Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), 
+								Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), 
+								Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText()));
+						if (esJuegoIgual(juego)){
+							JOptionPane.showMessageDialog(vista.getFrame(), "Juego repetido", "Error", JOptionPane.ERROR_MESSAGE);
 						} else {
-							jSQLite.insertarJuego(juego);
-							vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+							if(modificar){
+								int lugarBD = jSQLite.obtenerID(Coleccion.getLista().get(indice));
+								jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), 
+										Coleccion.getLista().get(indice).getImagen(), 
+										Integer.parseInt(vista.getTextMin().getText()), 
+										Integer.parseInt(vista.getTextMax().getText()), 
+										Integer.parseInt(vista.getTextTiempo().getText()), 
+										Integer.parseInt(vista.getTextRanking().getText()), 
+										Double.parseDouble(vista.getTextRating().getText()), 
+										Integer.parseInt(vista.getTextAnyo().getText())),lugarBD);
+								vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+							} else {
+								jSQLite.insertarJuego(juego);
+								vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+							}
 						}
+					} catch (NumberFormatException e1) {
+						System.err.println("Formato de número incorrecto");
+					} catch (JuegoIlegalException e1) {
+						System.err.println("El juego no ha podido ser creado");
 					}
+					
 				}
 				
 			}
@@ -199,6 +217,9 @@ public class Controlador {
 								CreadorPDF.crearPDF(Coleccion.getLista(), Extension.obtenerExtension(jFPDF));
 							}
 						}
+						//Esta parte del código no está a pleno rendimiento aún. 
+						//La idea es que el usuario pueda hacer una selección de 
+						//filas para realizar el informe.
 					} else {
 						texto = "¿Desea generar un informe con los elementos seleccionados?";
 						if (lFichero!=null){
@@ -255,13 +276,16 @@ public class Controlador {
 		Image imagen = null;
 		if (Coleccion.getLista().get(indice).getImagen().equals("resources/dado.png")){
 			vista.getImagen().setText("");
-			vista.getImagen().setIcon(new ImageIcon("resources/dado.png"));
+			//Esta variable recoge la imagen almacenada en /resources
+			ImageIcon ico = new ImageIcon(Main.class.getResource("/dado.png"));
+			vista.getImagen().setIcon(ico);
 		} else {
 			try {
 				URL url = new URL("http:"+Coleccion.getLista().get(indice).getImagen());
 				imagen = ImageIO.read(url);
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				System.err.println("URL de imagen no encontrada");
+				//e1.printStackTrace();
 			}
 			vista.getImagen().setText("");
 			vista.getImagen().setIcon(new ImageIcon(imagen));
@@ -306,7 +330,7 @@ public class Controlador {
 	}
 	/**
 	 * El método .equals está sobre escrito pero me ha parecido razonable extraer el método aquí
-	 * para no sobrecargar el evento que controla la modificación de datos en el fomulario.
+	 * para no saturar el evento que controla la modificación de datos en el fomulario.
 	 * @param juego que ha introducido el usuario y será comparado con la lista de juegos.
 	 * @return true si el usuario está tratando de introducir un juego que ya está en la lista.
 	 */
@@ -331,8 +355,8 @@ public class Controlador {
 	
 
 	/**
-	 * Método que notificará que hay cambios realizados en el formulario si el usuario pasa
-	 * a otra fila
+	 * Método que notificará que hay cambios realizados en el formulario si el usuario pasa a otra fila
+	 * 
 	 */
 	private void modificarTrasSeleccion(){
 		if (id != -1 && id != jSQLite.obtenerID(Coleccion.getLista().get(vista.getTabla().getSelectedRow()))){
@@ -340,8 +364,13 @@ public class Controlador {
 				if(!(vista.getTextNombre().getText().equals(jSQLite.obtenerJuego(id).getNombre()) && vista.getTextAnyo().getText().equals(jSQLite.obtenerJuego(id).getAnyoPublicacion()+"") && vista.getTextMax().getText().equals(jSQLite.obtenerJuego(id).getMaximoJugadores()+"") && vista.getTextMin().getText().equals(jSQLite.obtenerJuego(id).getMinimoJugadores()+"") && vista.getTextRanking().getText().equals(jSQLite.obtenerJuego(id).getRanking()+"") && vista.getTextRating().getText().equals(jSQLite.obtenerJuego(id).getRating()+"") && vista.getTextTiempo().getText().equals(jSQLite.obtenerJuego(id).getTiempoJuego()+""))){
 					String texto = "Ha realizado cambios. ¿Desea guardar?";
 					if (confirmar(texto)==0){
-						jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())),id);
-						vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+						try {
+							jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())),id);
+							vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+						} catch (NumberFormatException | JuegoIlegalException e) {
+							System.err.println("El juego tiene un formato incorrecto");
+						}
+
 					}
 					
 				}

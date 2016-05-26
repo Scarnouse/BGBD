@@ -14,6 +14,8 @@ public class List2Array {
 	 * Este método permite la carga de un array bidimensional para crear la tabla
 	 * Mi decisión es que la tabla no mostrase todos los datos al usuario para hacer funcional
 	 * el fomulario.
+	 * Este método podría estar dentro de la clase TablaModelo, pero lo hice al principio y ya le
+	 * tengo cariño.
 	 * @param lista
 	 * @return array que contiene los campos nombre, ranking y rating de cada juego
 	 */
@@ -38,9 +40,7 @@ public class List2Array {
 			}
 			cadenas.clear();
 		}
-		
 		return array;
-
 	}
 	
 }

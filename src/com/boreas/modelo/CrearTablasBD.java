@@ -40,7 +40,6 @@ public class CrearTablasBD {
 			}
 			sentencia.executeBatch();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
@@ -89,6 +88,25 @@ public class CrearTablasBD {
 		String sql = "CREATE VIEW IF NOT EXISTS VISTAJUEGO("
 				+ "NOMBRE, RANKING, RATING) "
 				+ "AS SELECT NOMBRE, RANKING, RATING FROM JUEGO;";
+		try {
+			sentencia = c.createStatement();
+			sentencia.execute(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				sentencia.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}	
+	}
+	/**
+	 * Método que crea un indice del campo nombre.
+	 * @param c Conexion
+	 */
+	public static void crearIndice(Connection c){
+		String sql = "CREATE INDEX IF NOT EXISTS INDICEJUEGO ON JUEGO(NOMBRE);";
 		try {
 			sentencia = c.createStatement();
 			sentencia.execute(sql);

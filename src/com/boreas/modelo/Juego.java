@@ -1,5 +1,10 @@
 package com.boreas.modelo;
-
+/**
+ * 
+ * @author Manuel Quesada Segura
+ * @version 0.0
+ *
+ */
 public class Juego {
 	private String nombre, imagen;
 	private int minimoJugadores, maximoJugadores, tiempoJuego, ranking, anyoPublicacion;
@@ -16,15 +21,20 @@ public class Juego {
 	 * @param anyoPublicacion año de publicación
 	 */
 	public Juego(String nombre, String imagen, int minimoJugadores, int maximoJugadores, int tiempoJuego, int ranking,
-			double rating, int anyoPublicacion) {
-		this.nombre = nombre;
-		this.imagen = imagen;
-		this.minimoJugadores = minimoJugadores;
-		this.maximoJugadores = maximoJugadores;
-		this.tiempoJuego = tiempoJuego;
-		this.ranking = ranking;
-		this.rating = rating;
-		this.anyoPublicacion = anyoPublicacion;
+			double rating, int anyoPublicacion) throws JuegoIlegalException{
+		//La excepción salta si el juego no ha recibido ningún nombre
+		if (nombre!=null){
+			this.nombre = nombre;
+			this.imagen = imagen;
+			this.minimoJugadores = minimoJugadores;
+			this.maximoJugadores = maximoJugadores;
+			this.tiempoJuego = tiempoJuego;
+			this.ranking = ranking;
+			this.rating = rating;
+			this.anyoPublicacion = anyoPublicacion;
+		} else {
+			throw new JuegoIlegalException();
+		}
 	}
 	
 	/**

@@ -3,9 +3,6 @@ package com.boreas.modelo;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.google.gson.stream.JsonReader;
 /**
@@ -16,7 +13,7 @@ import com.google.gson.stream.JsonReader;
 public class LecturaFichero {
 	
 	private Coleccion coleccion = new Coleccion();
-	private List<Juego> lista = new ArrayList<Juego>();
+
 
 	/**
 	 * Método que permite la lectura del fichero JSON y su conservación en una lista dinámica.
@@ -33,6 +30,8 @@ public class LecturaFichero {
 				jReader.beginObject();
 				if (jReader.nextName().equals("gameId")) jReader.skipValue();
 				//El campo nombre contenía apóstrofes de ahí que haya tenido que reemplazarlos por espacios en blanco
+				//El problema residía que si un archivo contenía un apóstrofe la sentencia SQL se veía afectada a la
+				//hora de realizar INSERTS.
 				if (jReader.nextName().equals("name")) nombre = jReader.nextString().replace("'","");
 				if (jReader.nextName().equals("image")) jReader.skipValue();
 				if (jReader.nextName().equals("thumbnail")) imagen = jReader.nextString();
@@ -61,10 +60,10 @@ public class LecturaFichero {
 			}
 			jReader.endArray();
 			
-
-			
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (JuegoIlegalException e) {
+			System.err.println("El juego no ha podido ser creado");
 		}
 		
 		//Este bucle me permitía ver si la carga desde el JSON se había hecho correctamente.

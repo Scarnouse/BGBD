@@ -70,7 +70,6 @@ public class JuegoDAOImpSQLite implements JuegoDAO{
 				e.printStackTrace();
 			}
 		}
-		//System.out.println(valor + " - " + juego);
 		return valor;
 	}
 
@@ -87,7 +86,6 @@ public class JuegoDAOImpSQLite implements JuegoDAO{
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		//System.out.println(valor);
 		return valor;
 	}
 	
@@ -105,6 +103,9 @@ public class JuegoDAOImpSQLite implements JuegoDAO{
 			sentencia.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} catch (JuegoIlegalException e) {
+			System.err.println("El juego no ha podido ser creado");
+
 		}
 		return Coleccion.getLista();
 	}
@@ -168,11 +169,12 @@ public class JuegoDAOImpSQLite implements JuegoDAO{
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} catch (JuegoIlegalException e) {
+			System.err.println("No puede mostrarse el juego");
 		} finally {
 			try {
 				sentenciaPreparada.close();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

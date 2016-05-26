@@ -1,6 +1,6 @@
+package com.boreas.controlador;
 import java.awt.EventQueue;
 
-import com.boreas.controlador.Controlador;
 import com.boreas.vista.VistaPrincipal;
 /**
  * 
@@ -19,7 +19,8 @@ public class Main {
 					VistaPrincipal window = new VistaPrincipal();
 					window.getFrame().setVisible(true);
 				} catch (Exception e) {
-					e.printStackTrace();
+					System.err.println("No ha sido posible cargar la vista");
+					//e.printStackTrace();
 				}
 			}
 		});
