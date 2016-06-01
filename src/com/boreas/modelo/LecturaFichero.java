@@ -22,6 +22,7 @@ public class LecturaFichero {
 	public void leerFichero(File file){
 		
 		try (JsonReader jReader = new JsonReader(new FileReader(file));){
+			
 			jReader.beginArray();
 			int minimoJugadores = 0, maximoJugadores = 0, tiempoJuego = 0, ranking = 0, anyoPublicacion = 0;
 			double rating = 0;

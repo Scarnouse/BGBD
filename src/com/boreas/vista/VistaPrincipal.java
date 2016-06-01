@@ -27,6 +27,9 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Dimension;
+import java.awt.Color;
+import javax.swing.border.LineBorder;
 /**
  * Clase que contiene la vista principal
  * @author Manuel Quesada Segura
@@ -55,7 +58,6 @@ public class VistaPrincipal {
 	private JLabel lblBarraTitulo;
 	private JSplitPane splitPane;
 	private JPanel panelDerecho;
-	private Box verticalBox;
 	private Box verticalBox_1;
 	private Box horizontalBox;
 	private Box horizontalBox_1;
@@ -133,14 +135,16 @@ public class VistaPrincipal {
 		panelTitulo.add(lblBarraTitulo);
 		
 		splitPane = new JSplitPane();
-		splitPane.setDividerLocation(300);
+		
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 		
 		
 		panelDerecho = new JPanel();
+		panelDerecho.setBorder(null);
+		panelDerecho.setBackground(new Color(238, 238, 238));
 		splitPane.setRightComponent(panelDerecho);
-		
-		verticalBox = Box.createVerticalBox();
+		splitPane.setDividerLocation(1f);
+		splitPane.setResizeWeight(1);
 		
 		verticalBox_1 = Box.createVerticalBox();
 		
@@ -155,6 +159,11 @@ public class VistaPrincipal {
 		btnNuevo = new JButton("Nuevo");
 		
 		imagen = new JLabel("Juego");
+		imagen.setMinimumSize(new Dimension(250, 200));
+		imagen.setBorder(null);
+		imagen.setForeground(Color.BLACK);
+		imagen.setBackground(Color.RED);
+		imagen.setPreferredSize(new Dimension(250, 200));
 		imagen.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		atras = new JButton("<<");
@@ -165,62 +174,52 @@ public class VistaPrincipal {
 		gl_panelDerecho.setHorizontalGroup(
 			gl_panelDerecho.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_panelDerecho.createSequentialGroup()
-					.addGap(304)
-					.addComponent(verticalBox, GroupLayout.PREFERRED_SIZE, 1, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(173, Short.MAX_VALUE))
-				.addGroup(gl_panelDerecho.createSequentialGroup()
-					.addContainerGap()
+					.addGap(85)
 					.addComponent(btnGuardar)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(atras, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED, 186, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.RELATED, 203, Short.MAX_VALUE)
 					.addComponent(adelante, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnNuevo)
-					.addContainerGap())
+					.addGap(73))
 				.addGroup(gl_panelDerecho.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(horizontalBox, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
-					.addGap(70)
-					.addComponent(horizontalBox_1, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-					.addGap(7))
+					.addComponent(horizontalBox, GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+					.addGap(65)
+					.addComponent(horizontalBox_1, GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+					.addContainerGap())
 				.addGroup(gl_panelDerecho.createSequentialGroup()
-					.addGap(240)
+					.addGap(207)
+					.addComponent(imagen, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGap(212))
+				.addGroup(gl_panelDerecho.createSequentialGroup()
+					.addGap(148)
+					.addComponent(panel, GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+					.addGap(137))
+				.addGroup(gl_panelDerecho.createSequentialGroup()
+					.addContainerGap(322, Short.MAX_VALUE)
 					.addComponent(verticalBox_1, GroupLayout.PREFERRED_SIZE, 32, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(206, Short.MAX_VALUE))
-				.addGroup(gl_panelDerecho.createSequentialGroup()
-					.addGap(212)
-					.addComponent(imagen, GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-					.addGap(207))
-				.addGroup(gl_panelDerecho.createSequentialGroup()
-					.addGap(78)
-					.addComponent(panel, GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
-					.addGap(69))
+					.addGap(315))
 		);
 		gl_panelDerecho.setVerticalGroup(
 			gl_panelDerecho.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelDerecho.createSequentialGroup()
+					.addContainerGap()
 					.addGroup(gl_panelDerecho.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelDerecho.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(verticalBox, GroupLayout.PREFERRED_SIZE, 1, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panelDerecho.createSequentialGroup()
-							.addGap(81)
-							.addComponent(horizontalBox, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panelDerecho.createSequentialGroup()
-							.addGap(83)
-							.addComponent(horizontalBox_1, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE)))
-					.addGap(17)
-					.addComponent(imagen)
-					.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(horizontalBox, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE)
+						.addComponent(horizontalBox_1, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addComponent(imagen, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(18)
 					.addComponent(panel, GroupLayout.PREFERRED_SIZE, 145, GroupLayout.PREFERRED_SIZE)
-					.addGap(54)
+					.addGap(18)
 					.addComponent(verticalBox_1, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED, 135, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
 					.addGroup(gl_panelDerecho.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnGuardar)
-						.addComponent(btnNuevo)
 						.addComponent(atras)
+						.addComponent(btnNuevo)
 						.addComponent(adelante))
 					.addContainerGap())
 		);
@@ -272,7 +271,7 @@ public class VistaPrincipal {
 						.addGroup(gl_panel.createSequentialGroup()
 							.addComponent(lblNewLabel)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(textNombre, GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+							.addComponent(textNombre, GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(lblAo)
 							.addPreferredGap(ComponentPlacement.RELATED)

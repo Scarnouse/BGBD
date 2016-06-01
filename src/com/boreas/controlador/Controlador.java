@@ -83,10 +83,14 @@ public class Controlador {
 			int seleccion = fC.showOpenDialog(vista.getMntmAbrir());
 			if (seleccion == JFileChooser.APPROVE_OPTION){
 				fichero = fC.getSelectedFile();
-				lFichero.leerFichero(fichero);
-				vista.getTabla().setModel(new TablaModelo(Coleccion.getLista()));
-				CrearTablasBD.cargarTablasLotes(c, Coleccion.getLista());
-				vista.getMntmAbrir().setEnabled(false);
+				if(fichero.getName().equals("edwater.json")){
+					lFichero.leerFichero(fichero);
+					vista.getTabla().setModel(new TablaModelo(Coleccion.getLista()));
+					CrearTablasBD.cargarTablasLotes(c, Coleccion.getLista());
+					vista.getMntmAbrir().setEnabled(false);
+				} else {
+					JOptionPane.showMessageDialog(vista.getFrame(), "El archivo cargado es incorrecto");
+				}
 			}			
 			if (seleccion == JFileChooser.CANCEL_OPTION){
 				vista.getLblBarraTitulo().setText("No hay fichero cargado");

@@ -80,6 +80,37 @@ public class CrearTablasBD {
 		}
 		
 	}
+	
+	/**
+	 * Trigger que inserta la fila modificada en la tabla Modificados
+	 * @param c Conexion
+	 */
+	
+	public static void triggerModificado(Connection c){
+		String sqlModificado = "CREATE TABLE IF NOT EXISTS MODIFICADOS("
+				+ "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "NOMBRE TEXT,"
+				+ "FECHAMODIFICIACION DATE);";
+		String sqlTrigger= "CREATE TRIGGER IF NOT EXISTS MODIFICADO "
+				+ "AFTER UPDATE ON JUEGO FOR EACH ROW "
+				+ "BEGIN "
+				+ "INSERT INTO MODIFICADO VALUES (null, old.NOMBRE, date('now'));"
+				+ "END";
+		try {
+			sentencia = c.createStatement();
+			sentencia.addBatch(sqlModificado);
+			sentencia.addBatch(sqlTrigger);
+			sentencia.executeBatch();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				sentencia.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	/**
 	 * Método para crear una vista compuesta por los campos nombre, ranking, rating
 	 * @param c Conexión
@@ -120,6 +151,8 @@ public class CrearTablasBD {
 			}
 		}	
 	}
+	
+	
 	
 }
 
