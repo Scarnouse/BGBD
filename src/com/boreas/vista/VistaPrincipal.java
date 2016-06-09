@@ -25,11 +25,8 @@ import java.awt.Component;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.Dimension;
 import java.awt.Color;
-import javax.swing.border.LineBorder;
 /**
  * Clase que contiene la vista principal
  * @author Manuel Quesada Segura
@@ -38,7 +35,7 @@ import javax.swing.border.LineBorder;
  */
 public class VistaPrincipal {
 
-	private JFrame frame;
+	private static JFrame frame;
 	private JTextField textNombre;
 	private JTextField textAnyo;
 	private JTextField textMax;
@@ -190,13 +187,13 @@ public class VistaPrincipal {
 					.addComponent(horizontalBox_1, GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
 					.addContainerGap())
 				.addGroup(gl_panelDerecho.createSequentialGroup()
-					.addGap(207)
+					.addGap(70)
 					.addComponent(imagen, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-					.addGap(212))
+					.addGap(70))
 				.addGroup(gl_panelDerecho.createSequentialGroup()
-					.addGap(148)
+					.addGap(20)
 					.addComponent(panel, GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-					.addGap(137))
+					.addGap(20))
 				.addGroup(gl_panelDerecho.createSequentialGroup()
 					.addContainerGap(322, Short.MAX_VALUE)
 					.addComponent(verticalBox_1, GroupLayout.PREFERRED_SIZE, 32, GroupLayout.PREFERRED_SIZE)
@@ -379,7 +376,7 @@ public class VistaPrincipal {
 
 	}
 	
-	public JFrame getFrame() {
+	public static JFrame getFrame() {
 		return frame;
 	}
 	

@@ -15,20 +15,28 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.TableModel;
 
 import com.boreas.modelo.Coleccion;
+import com.boreas.modelo.ColeccionMongoDB;
 import com.boreas.modelo.ConectarBD;
 import com.boreas.modelo.CreadorPDF;
 import com.boreas.modelo.CrearTablasBD;
 import com.boreas.modelo.Extension;
 import com.boreas.modelo.Juego;
+import com.boreas.modelo.JuegoDAOImpMongoDB;
 import com.boreas.modelo.JuegoDAOImpSQLite;
 import com.boreas.modelo.JuegoIlegalException;
 import com.boreas.modelo.LecturaFichero;
+import com.boreas.modelo.MongoDBJDBC;
 import com.boreas.vista.AcercaDe;
 import com.boreas.vista.TablaModelo;
 import com.boreas.vista.VistaPrincipal;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
 
 /**
  * Clase Controlador
@@ -47,6 +55,8 @@ public class Controlador {
 	private Connection c = ConectarBD.getConexion();
 	private JuegoDAOImpSQLite jSQLite = new JuegoDAOImpSQLite();
 	private int id = -1; //identificador obtenido de la Base Datos. Es la primary key del objeto juego
+	private MongoClient mongoConexion = MongoDBJDBC.getMongo();
+	private JuegoDAOImpMongoDB mongoDB = new JuegoDAOImpMongoDB();
 	
 	/**
 	 * Contructor de la clase Controlador
@@ -67,10 +77,18 @@ public class Controlador {
 		//Si es true, impide la carga de más ficheros, carga los juegos desde la tabla de la BD y activa
 		//el trigger de borrado
 		
-		if (new File("database.db").exists() && jSQLite.obtenerFilas()>0){
+		/**if (new File("database.db").exists() && jSQLite.obtenerFilas()>0){
 			vista.getMntmAbrir().setEnabled(false);
 			vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
 			CrearTablasBD.triggerBorrado(c);
+			CrearTablasBD.triggerModificado(c);
+		}**/
+		
+		if(ColeccionMongoDB.comprobarColeccion(mongoConexion)>0){
+			//el comando para borrar tablas en mongo es db.dropDatabase()
+			vista.getMntmAbrir().setEnabled(false);
+			vista.getTabla().setModel(new TablaModelo(mongoDB.leerTodosJuegos()));
+
 		}
 		
 		//Evento carga de datos a la tabla
@@ -83,14 +101,13 @@ public class Controlador {
 			int seleccion = fC.showOpenDialog(vista.getMntmAbrir());
 			if (seleccion == JFileChooser.APPROVE_OPTION){
 				fichero = fC.getSelectedFile();
-				if(fichero.getName().equals("edwater.json")){
-					lFichero.leerFichero(fichero);
-					vista.getTabla().setModel(new TablaModelo(Coleccion.getLista()));
-					CrearTablasBD.cargarTablasLotes(c, Coleccion.getLista());
-					vista.getMntmAbrir().setEnabled(false);
-				} else {
-					JOptionPane.showMessageDialog(vista.getFrame(), "El archivo cargado es incorrecto");
-				}
+				lFichero.leerFichero(fichero);
+				vista.getTabla().setModel(new TablaModelo(Coleccion.getLista()));
+				//CrearTablasBD.cargarTablasLotes(c, Coleccion.getLista());
+				vista.getMntmAbrir().setEnabled(false);
+				//zona pruebas mongo
+				ColeccionMongoDB.crearColeccion(mongoConexion, Coleccion.getLista());
+				//zona pruebas mongo
 			}			
 			if (seleccion == JFileChooser.CANCEL_OPTION){
 				vista.getLblBarraTitulo().setText("No hay fichero cargado");
@@ -100,14 +117,25 @@ public class Controlador {
 		
 		//Evento de carga de datos al formulario haciendo click en una fila
 		
-		vista.getTabla().getSelectionModel().addListSelectionListener(l->{			
+		vista.getTabla().getSelectionModel().addListSelectionListener(l->{
+			
 			if (vista.getTabla().getSelectedRow() != -1){
+				indice = vista.getTabla().getSelectedRow();
+				modificarTrasSeleccion();
+				rellenarFormulario(indice);
+				id = mongoDB.obtenerID(Coleccion.getLista().get(indice));
+				vista.getTabla().setModel(new TablaModelo(mongoDB.leerTodosJuegos()));
+			}
+			
+			//código usado para SQLite
+			
+			/*if (vista.getTabla().getSelectedRow() != -1){
 				indice = vista.getTabla().getSelectedRow();
 				modificarTrasSeleccion();
 				rellenarFormulario(indice);
 				id = jSQLite.obtenerID(Coleccion.getLista().get(indice));
 				vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
-			}
+			}*/
 		});
 		
 		//Evento para retroceder en la tabla
@@ -118,7 +146,7 @@ public class Controlador {
 					indice -= 1;
 					rellenarFormulario(indice);
 				} else {
-					vista.getLblBarraTitulo().setText("No tiene cargado ningún archivo");
+					indice=0;
 				}
 			}
 		});
@@ -127,19 +155,25 @@ public class Controlador {
 		
 		vista.getAdelante().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(indice == 0 && lFichero!=null){
+				if(indice == 0 && mongoConexion.toString().isEmpty()!=false){
 					rellenarFormulario(indice);
-				} else if (indice == 0 && lFichero == null) {
+					id += 1;
+				} else if (indice == 0 && mongoConexion.toString().isEmpty()==true) {
 					vista.getLblBarraTitulo().setText("No tiene cargado ningún archivo");
+				} else if (indice == Coleccion.getLista().size()-1) {
+					rellenarFormulario(indice);
+					id += 1;
 				} else {
 					indice += 1;
 					rellenarFormulario(indice);
+					id += 1;
 				}
 			}
 		});
 		
 		//Evento de cierre desde el menú
 		vista.getMntmCerrar().addActionListener(l->{
+			mongoConexion.close();
 			System.exit(0);
 		});
 		
@@ -163,7 +197,21 @@ public class Controlador {
 							JOptionPane.showMessageDialog(vista.getFrame(), "Juego repetido", "Error", JOptionPane.ERROR_MESSAGE);
 						} else {
 							if(modificar){
-								int lugarBD = jSQLite.obtenerID(Coleccion.getLista().get(indice));
+								
+								int lugarBD = mongoDB.obtenerID(Coleccion.getLista().get(indice));
+								mongoDB.actualizarJuego(new Juego(vista.getTextNombre().getText(), 
+										Coleccion.getLista().get(indice).getImagen(), 
+										Integer.parseInt(vista.getTextMin().getText()), 
+										Integer.parseInt(vista.getTextMax().getText()), 
+										Integer.parseInt(vista.getTextTiempo().getText()), 
+										Integer.parseInt(vista.getTextRanking().getText()), 
+										Double.parseDouble(vista.getTextRating().getText()), 
+										Integer.parseInt(vista.getTextAnyo().getText())),lugarBD);
+								vista.getTabla().setModel(new TablaModelo(mongoDB.leerTodosJuegos()));
+								
+								//Código SQLite
+
+								/**int lugarBD = jSQLite.obtenerID(Coleccion.getLista().get(indice));
 								jSQLite.actualizarJuego(new Juego(vista.getTextNombre().getText(), 
 										Coleccion.getLista().get(indice).getImagen(), 
 										Integer.parseInt(vista.getTextMin().getText()), 
@@ -172,10 +220,13 @@ public class Controlador {
 										Integer.parseInt(vista.getTextRanking().getText()), 
 										Double.parseDouble(vista.getTextRating().getText()), 
 										Integer.parseInt(vista.getTextAnyo().getText())),lugarBD);
-								vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+								vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));*/
 							} else {
-								jSQLite.insertarJuego(juego);
-								vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+								// On SQLite way
+								//jSQLite.insertarJuego(juego);
+								//vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+								mongoDB.insertarJuego(juego);
+								vista.getTabla().setModel(new TablaModelo(mongoDB.leerTodosJuegos()));
 							}
 						}
 					} catch (NumberFormatException e1) {
@@ -196,9 +247,10 @@ public class Controlador {
 				String texto = "¿Desea borrar "+ Coleccion.getLista().get(indice).getNombre() + "?";
 				if(lFichero!=null){
 					if (confirmar(texto)==0){
-						jSQLite.borrarJuego(Coleccion.getLista().get(indice).getNombre());
-						vista.getTabla().setModel(new TablaModelo(jSQLite.leerTodosJuegos()));
+						mongoDB.borrarJuego(Coleccion.getLista().get(indice).getNombre());
+						vista.getTabla().setModel(new TablaModelo(mongoDB.leerTodosJuegos()));
 						limpiarFormulario();
+						vista.getLblBarraTitulo().setText("Elemento borrado con exito");
 					}
 				} else if (lFichero == null) {
 					vista.getLblBarraTitulo().setText("No tiene cargado ningún archivo");
@@ -363,7 +415,29 @@ public class Controlador {
 	 * 
 	 */
 	private void modificarTrasSeleccion(){
-		if (id != -1 && id != jSQLite.obtenerID(Coleccion.getLista().get(vista.getTabla().getSelectedRow()))){
+		//System.out.println(id + " " + mongoDB.obtenerID(Coleccion.getLista().get(vista.getTabla().getSelectedRow())));
+		if (id != -1 && id != mongoDB.obtenerID(Coleccion.getLista().get(vista.getTabla().getSelectedRow()))){
+			if (mongoDB.obtenerJuego(id) != null && (!(vista.getTextNombre().getText().isEmpty() && vista.getTextAnyo().getText().isEmpty() && vista.getTextMax().getText().isEmpty() && vista.getTextMin().getText().isEmpty() && vista.getTextRanking().getText().isEmpty() && vista.getTextRating().getText().isEmpty() && vista.getTextTiempo().getText().isEmpty()))){
+				//System.out.println(vista.getTextNombre().getText().equals(mongoDB.obtenerJuego(id).getNombre()) +" " + vista.getTextAnyo().getText().equals(mongoDB.obtenerJuego(id).getAnyoPublicacion()+"") + " " + vista.getTextMax().getText().equals(mongoDB.obtenerJuego(id).getMaximoJugadores()+"") + " " + vista.getTextMin().getText().equals(mongoDB.obtenerJuego(id).getMinimoJugadores()+"") + " " + vista.getTextRanking().getText().equals(mongoDB.obtenerJuego(id).getRanking()+"") + " " + vista.getTextRating().getText().equals(mongoDB.obtenerJuego(id).getRating()+"") + " " + vista.getTextTiempo().getText().equals(mongoDB.obtenerJuego(id).getTiempoJuego()+""));
+				if(!(vista.getTextNombre().getText().equals(mongoDB.obtenerJuego(id).getNombre()) && vista.getTextAnyo().getText().equals(mongoDB.obtenerJuego(id).getAnyoPublicacion()+"") && vista.getTextMax().getText().equals(mongoDB.obtenerJuego(id).getMaximoJugadores()+"") && vista.getTextMin().getText().equals(mongoDB.obtenerJuego(id).getMinimoJugadores()+"") && vista.getTextRanking().getText().equals(mongoDB.obtenerJuego(id).getRanking()+"") && vista.getTextRating().getText().equals(mongoDB.obtenerJuego(id).getRating()+"") && vista.getTextTiempo().getText().equals(mongoDB.obtenerJuego(id).getTiempoJuego()+""))){
+					String texto = "Ha realizado cambios. ¿Desea guardar?";
+					if (confirmar(texto)==0){
+						try {
+							//System.out.println(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())));
+							mongoDB.actualizarJuego(new Juego(vista.getTextNombre().getText(), Coleccion.getLista().get(indice).getImagen(), Integer.parseInt(vista.getTextMin().getText()), Integer.parseInt(vista.getTextMax().getText()), Integer.parseInt(vista.getTextTiempo().getText()), Integer.parseInt(vista.getTextRanking().getText()), Double.parseDouble(vista.getTextRating().getText()), Integer.parseInt(vista.getTextAnyo().getText())),id);
+							vista.getTabla().setModel(new TablaModelo(mongoDB.leerTodosJuegos()));
+						} catch (NumberFormatException | JuegoIlegalException e) {
+							System.err.println("El juego tiene un formato incorrecto");
+						}
+
+					}
+				}
+			}
+		}
+		
+		//Código usado para SQLite
+		
+		/**if (id != -1 && id != jSQLite.obtenerID(Coleccion.getLista().get(vista.getTabla().getSelectedRow()))){
 			if (jSQLite.obtenerJuego(id) != null && (!(vista.getTextNombre().getText().isEmpty() && vista.getTextAnyo().getText().isEmpty() && vista.getTextMax().getText().isEmpty() && vista.getTextMin().getText().isEmpty() && vista.getTextRanking().getText().isEmpty() && vista.getTextRating().getText().isEmpty() && vista.getTextTiempo().getText().isEmpty()))){
 				if(!(vista.getTextNombre().getText().equals(jSQLite.obtenerJuego(id).getNombre()) && vista.getTextAnyo().getText().equals(jSQLite.obtenerJuego(id).getAnyoPublicacion()+"") && vista.getTextMax().getText().equals(jSQLite.obtenerJuego(id).getMaximoJugadores()+"") && vista.getTextMin().getText().equals(jSQLite.obtenerJuego(id).getMinimoJugadores()+"") && vista.getTextRanking().getText().equals(jSQLite.obtenerJuego(id).getRanking()+"") && vista.getTextRating().getText().equals(jSQLite.obtenerJuego(id).getRating()+"") && vista.getTextTiempo().getText().equals(jSQLite.obtenerJuego(id).getTiempoJuego()+""))){
 					String texto = "Ha realizado cambios. ¿Desea guardar?";
@@ -379,7 +453,7 @@ public class Controlador {
 					
 				}
 			}
-		}
+		}*/
 	}
 	
 	/**

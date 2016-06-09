@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
+import com.boreas.vista.VistaPrincipal;
 import com.google.gson.stream.JsonReader;
 /**
  * Clase de lectura del fichero
@@ -62,7 +65,7 @@ public class LecturaFichero {
 			jReader.endArray();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(VistaPrincipal.getFrame(), "Ha introducido un archivo erróneo");
 		} catch (JuegoIlegalException e) {
 			System.err.println("El juego no ha podido ser creado");
 		}
